@@ -87,60 +87,62 @@ points = [
 
 
 // 箱の作成
-difference() {
-    minkowski() {
-        // 丸みをつけるための球体
-        sphere(r = radius, $fn = 32); // 半径2mmの球体で丸みを作成
 
-        translate([radius, radius, radius])
-        difference(){
-            union(){
-                difference() {
-                    // 外側の箱
-                    cube([outer_width, outer_depth, outer_height], center = false);
-                    
-                    // 内側の空洞
-                    translate([Thickness_Sides, Thickness_Sides, Thickness_Bottom])
-                        cube([inner_width, inner_depth, inner_height+1], center = false);
-                }
+// 全体位置を真ん中に持ってくる
+translate([outer_width_r / -2, outer_depth_r / -2, 0]){
+    difference() {
+        minkowski() {
+            // 丸みをつけるための球体
+            sphere(r = radius, $fn = 32); // 半径2mmの球体で丸みを作成
 
-                // 仕切り作成
-                if (Need_Depth_Divider == true){
-                    for(i = [1 : divisions_depth - 1]) {
-                        echo(i);
-                        translate([0, Thickness_Sides + (div_d_space * i) - radius, 0])
-                            cube([outer_width, thick_sides_r, outer_height], center = false);
+            translate([radius, radius, radius])
+            difference(){
+                union(){
+                    difference() {
+                        // 外側の箱
+                        cube([outer_width, outer_depth, outer_height], center = false);
+                        
+                        // 内側の空洞
+                        translate([Thickness_Sides, Thickness_Sides, Thickness_Bottom])
+                            cube([inner_width, inner_depth, inner_height+1], center = false);
                     }
-                }
 
-                if (Need_Width_Divider == true){
-                    for(i = [1 : divisions_width - 1]) {
-                        echo(i);
-                        translate([Thickness_Sides + (div_w_space * i) - radius, 0, 0])
-                            cube([thick_sides_r, outer_depth, outer_height], center = false);
+                    // 仕切り作成
+                    if (Need_Depth_Divider == true){
+                        for(i = [1 : divisions_depth - 1]) {
+                            echo(i);
+                            translate([0, Thickness_Sides + (div_d_space * i) - radius, 0])
+                                cube([outer_width, thick_sides_r, outer_height], center = false);
+                        }
                     }
+
+                    if (Need_Width_Divider == true){
+                        for(i = [1 : divisions_width - 1]) {
+                            echo(i);
+                            translate([Thickness_Sides + (div_w_space * i) - radius, 0, 0])
+                                cube([thick_sides_r, outer_depth, outer_height], center = false);
+                        }
+                    }
+
                 }
 
-            }
-
-            // 上面の斜め削除
-            if (Diagonal == true) {
-                translate([outer_width_r, 0, 0])
-                    rotate([0, -90, 0])
-                        linear_extrude(outer_width_r)
-                            polygon(points);
+                // 上面の斜め削除
+                if (Diagonal == true) {
+                    translate([outer_width_r, 0, 0])
+                        rotate([0, -90, 0])
+                            linear_extrude(outer_width_r)
+                                polygon(points);
+                }
             }
         }
+
+        // ひっかけ部分左側削除
+        translate([hook_left_x + (radius*2), hook_y, hook_z])
+            cube([hook_width, hook_thickness, hook_height], center = false);
+
+        // ひっかけ部分右側削除
+        translate([hook_right_x + (radius*2), hook_y, hook_z])
+            cube([hook_width, hook_thickness, hook_height], center = false);
+
     }
-
-    // ひっかけ部分左側削除
-    translate([hook_left_x + (radius*2), hook_y, hook_z])
-        cube([hook_width, hook_thickness, hook_height], center = false);
-
-    // ひっかけ部分右側削除
-    translate([hook_right_x + (radius*2), hook_y, hook_z])
-        cube([hook_width, hook_thickness, hook_height], center = false);
-
 }
-
-
