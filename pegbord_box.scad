@@ -1,3 +1,5 @@
+include <BOSL2/std.scad>;
+
 $fs = 0.1;
 
 /*[Box Size]*/
@@ -19,14 +21,22 @@ Thickness_Bottom = 2;
 Diagonal = true;
 // The height of the front when the top surface is diagonal.
 Diagonal_Front_Height_Size = 20;
-//Check if dividers are necessary.
-Need_Depth_Divider = true;
+
+// Select how you'd like to divide the data
+Depth_Divid_Type = "Size"; // [None, Count, Size]
 //Number of divisions in the depth direction.
-divisions_depth = 2; //[1:10]
-//Check if dividers are necessary.
-Need_Width_Divider = true;
+divisions_depth = 6; //[1:10]
+// Depth division points(mm)
+depthSplits = "2,5,7,12";
+
+// Select how you'd like to divide the data
+Width_Divid_Type = "Size"; // [None, Count, Size]
 //Number of divisions in the width direction.
 divisions_width = 3; //[1:10]
+//Number of divisions in the width direction.
+divisions_width_positions = 3;
+// Width division points(mm)
+widthSplits = "10,25,52,80";
 
 
 /////////////////////////////
@@ -74,8 +84,15 @@ outer_height_r = outer_height + (radius * 2); // 高さ外径 + 丸め分
 
 //Number of divisions in the depth direction.
 div_d_space = inner_depth / divisions_depth;
+
+// 指定サイズでの奥行分割点を配列に入れる
+div_d_points = [for (val = str_split(depthSplits, ",")) parse_int(val)];
+
 //Number of divisions in the width direction.
 div_w_space = inner_width / divisions_width;
+
+// 指定サイズでの幅分割点を配列に入れる
+div_w_points = [for (val = str_split(widthSplits, ",")) parse_int(val)];
 
 // 斜め削除用の箱を作成
 points = [
@@ -84,7 +101,6 @@ points = [
     [front_height, 0],
     [front_height, 10]
 ];
-
 
 // 箱の作成
 
@@ -108,18 +124,30 @@ translate([outer_width_r / -2, outer_depth_r / -2, 0]){
                     }
 
                     // 仕切り作成
-                    if (Need_Depth_Divider == true){
+                    if (Depth_Divid_Type == "Count") {
                         for(i = [1 : divisions_depth - 1]) {
                             echo(i);
                             translate([0, Thickness_Sides + (div_d_space * i) - radius, 0])
                                 cube([outer_width, thick_sides_r, outer_height], center = false);
                         }
+                    }else if (Depth_Divid_Type == "Size") {
+                        for(i = [0 : len(div_d_points) - 1]) {
+                            echo(i);
+                            translate([0, Thickness_Sides + (div_d_points[i] - radius), 0])
+                                cube([outer_width, thick_sides_r, outer_height], center = false);
+                        }
                     }
 
-                    if (Need_Width_Divider == true){
+                    if (Width_Divid_Type == "Count"){
                         for(i = [1 : divisions_width - 1]) {
                             echo(i);
                             translate([Thickness_Sides + (div_w_space * i) - radius, 0, 0])
+                                cube([thick_sides_r, outer_depth, outer_height], center = false);
+                        }
+                    }else if (Width_Divid_Type == "Size") {
+                        for(i = [0 : len(div_w_points) - 1]) {
+                            echo(i);
+                            translate([Thickness_Sides + (div_w_points[i] - radius), 0, 0])
                                 cube([thick_sides_r, outer_depth, outer_height], center = false);
                         }
                     }
